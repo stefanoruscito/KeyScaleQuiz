@@ -261,7 +261,7 @@
         <h1>🎹 KeyScaleQuiz</h1>
         
         <div class="score-container">
-            <span>Domanda: <strong id="questionNum">1</strong>/10</span>
+            <span>Domanda: <strong id="questionNum">1</strong>/30</span>
             <span>Punteggio: <strong id="score">0</strong></span>
         </div>
 
@@ -287,7 +287,9 @@
     <div class="result-container" id="resultContainer">
         <h2>Quiz Completato! 🎊</h2>
         <div class="result-score" id="finalScore"></div>
-        <p style="margin-bottom: 20px;">Ottimo lavoro!</p>
+        <p style="margin-bottom: 20px; font-size: 18px;">
+            <span id="resultMessage"></span>
+        </p>
         <button class="restart-btn" onclick="restartQuiz()">
             Ricomincia 🔄
         </button>
@@ -305,7 +307,9 @@
             'F': { notes: ['F', 'G', 'A', 'Bb', 'C', 'D', 'E'], accidentals: '1 bemolle: Bb' },
             'Bb': { notes: ['Bb', 'C', 'D', 'Eb', 'F', 'G', 'A'], accidentals: '2 bemolli: Bb, Eb' },
             'Eb': { notes: ['Eb', 'F', 'G', 'Ab', 'Bb', 'C', 'D'], accidentals: '3 bemolli: Bb, Eb, Ab' },
-            'Ab': { notes: ['Ab', 'Bb', 'C', 'Db', 'Eb', 'F', 'G'], accidentals: '4 bemolli: Bb, Eb, Ab, Db' }
+            'Ab': { notes: ['Ab', 'Bb', 'C', 'Db', 'Eb', 'F', 'G'], accidentals: '4 bemolli: Bb, Eb, Ab, Db' },
+            'F#': { notes: ['F#', 'G#', 'A#', 'B', 'C#', 'D#', 'E#'], accidentals: '6 diesis: F#, C#, G#, D#, A#, E#' },
+            'Db': { notes: ['Db', 'Eb', 'F', 'Gb', 'Ab', 'Bb', 'C'], accidentals: '5 bemolli: Bb, Eb, Ab, Db, Gb' }
         };
 
         const pianoKeys = [
@@ -327,6 +331,7 @@
         let score = 0;
         let questionCount = 0;
         let answered = false;
+        const totalQuestions = 30;
 
         function createPiano() {
             const piano = document.getElementById('piano');
@@ -429,6 +434,11 @@
                         document.getElementById('score').textContent = score;
                         feedback.textContent = `✅ Corretto! ${scales[currentScale].accidentals}`;
                         feedback.className = 'feedback correct show';
+                        
+                        // Avanzamento automatico dopo 2 secondi per risposte corrette
+                        setTimeout(() => {
+                            nextQuestion();
+                        }, 2000);
                     } else {
                         btn.classList.add('incorrect');
                     }
@@ -440,13 +450,12 @@
             if (selected !== currentScale) {
                 feedback.textContent = `❌ Sbagliato! Era ${currentScale} maggiore. ${scales[currentScale].accidentals}`;
                 feedback.className = 'feedback incorrect show';
+                nextBtn.classList.add('show');
             }
-            
-            nextBtn.classList.add('show');
         }
 
         function nextQuestion() {
-            if (questionCount >= 10) {
+            if (questionCount >= totalQuestions) {
                 showResult();
                 return;
             }
@@ -468,7 +477,25 @@
         function showResult() {
             document.getElementById('gameContainer').style.display = 'none';
             document.getElementById('resultContainer').classList.add('show');
-            document.getElementById('finalScore').textContent = `${score}/10`;
+            document.getElementById('finalScore').textContent = `${score}/30`;
+            
+            // Messaggio personalizzato in base al punteggio
+            const percentage = (score / 30) * 100;
+            let message = '';
+            
+            if (percentage === 100) {
+                message = '🏆 Perfetto! Sei un maestro delle scale!';
+            } else if (percentage >= 90) {
+                message = '🌟 Eccellente! Conosci molto bene le scale!';
+            } else if (percentage >= 75) {
+                message = '👏 Ottimo lavoro! Continua così!';
+            } else if (percentage >= 60) {
+                message = '👍 Buon risultato! Con un po\' di pratica migliorerai!';
+            } else {
+                message = '💪 Continua a studiare, ce la farai!';
+            }
+            
+            document.getElementById('resultMessage').textContent = message;
         }
 
         function restartQuiz() {
