@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KeyScaleQuiz">
+    <meta name="theme-color" content="#1e293b">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>KeyScaleQuiz - Piano Scales Quiz</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(30, 41, 59, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .score-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .piano-container {
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .piano {
+            position: relative;
+            height: 120px;
+            width: 294px;
+            margin: 0 auto;
+        }
+
+        .key {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .white-key {
+            width: 40px;
+            height: 120px;
+            background: white;
+            border: 1px solid #333;
+            border-radius: 0 0 5px 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .white-key:hover {
+            background: #f0f0f0;
+        }
+
+        .white-key.active {
+            background: #60a5fa;
+            box-shadow: 0 0 20px #60a5fa, 0 2px 5px rgba(0,0,0,0.3);
+            transform: translateY(2px);
+        }
+
+        .black-key {
+            width: 28px;
+            height: 75px;
+            background: #1a1a1a;
+            border-radius: 0 0 4px 4px;
+            z-index: 2;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+
+        .black-key:hover {
+            background: #333;
+        }
+
+        .black-key.active {
+            background: #8b5cf6;
+            box-shadow: 0 0 20px #8b5cf6, 0 4px 8px rgba(0,0,0,0.5);
+            transform: translateY(2px);
+        }
+
+        .key-label {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .white-key.active .key-label {
+            color: white;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .option-btn {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .option-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .option-btn.correct {
+            background: rgba(34, 197, 94, 0.3);
+            border-color: #22c55e;
+        }
+
+        .option-btn.incorrect {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: #ef4444;
+        }
+
+        .feedback {
+            text-align: center;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.correct {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .feedback.incorrect {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .next-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .next-btn.show {
+            display: block;
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(96, 165, 250, 0.3);
+        }
+
+        .result-container {
+            text-align: center;
+            padding: 30px;
+            display: none;
+        }
+
+        .result-container.show {
+            display: block;
+        }
+
+        .result-score {
+            font-size: 3em;
+            margin: 20px 0;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .restart-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 600px) {
+            .white-key {
+                width: 35px;
+            }
+            
+            .black-key {
+                width: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="gameContainer">
+        <h1>🎹 KeyScaleQuiz</h1>
+        
+        <div class="score-container">
+            <span>Domanda: <strong id="questionNum">1</strong>/10</span>
+            <span>Punteggio: <strong id="score">0</strong></span>
+        </div>
+
+        <div class="piano-container">
+            <div class="piano" id="piano"></div>
+        </div>
+
+        <div class="question">
+            <p style="text-align: center; margin-bottom: 15px; font-size: 18px;">
+                Quale scala maggiore è evidenziata?
+            </p>
+        </div>
+
+        <div class="options" id="options"></div>
+        
+        <div class="feedback" id="feedback"></div>
+        
+        <button class="next-btn" id="nextBtn" onclick="nextQuestion()">
+            Prossima Domanda →
+        </button>
+    </div>
+
+    <div class="result-container" id="resultContainer">
+        <h2>Quiz Completato! 🎊</h2>
+        <div class="result-score" id="finalScore"></div>
+        <p style="margin-bottom: 20px;">Ottimo lavoro!</p>
+        <button class="restart-btn" onclick="restartQuiz()">
+            Ricomincia 🔄
+        </button>
+    </div>
+
+    <script>
+        // Scale maggiori con le loro note
+        const scales = {
+            'C': { notes: ['C', 'D', 'E', 'F', 'G', 'A', 'B'], accidentals: 'Nessuna alterazione' },
+            'G': { notes: ['G', 'A', 'B', 'C', 'D', 'E', 'F#'], accidentals: '1 diesis: F#' },
+            'D': { notes: ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'], accidentals: '2 diesis: F#, C#' },
+            'A': { notes: ['A', 'B', 'C#', 'D', 'E', 'F#', 'G#'], accidentals: '3 diesis: F#, C#, G#' },
+            'E': { notes: ['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#'], accidentals: '4 diesis: F#, C#, G#, D#' },
+            'B': { notes: ['B', 'C#', 'D#', 'E', 'F#', 'G#', 'A#'], accidentals: '5 diesis: F#, C#, G#, D#, A#' },
+            'F': { notes: ['F', 'G', 'A', 'Bb', 'C', 'D', 'E'], accidentals: '1 bemolle: Bb' },
+            'Bb': { notes: ['Bb', 'C', 'D', 'Eb', 'F', 'G', 'A'], accidentals: '2 bemolli: Bb, Eb' },
+            'Eb': { notes: ['Eb', 'F', 'G', 'Ab', 'Bb', 'C', 'D'], accidentals: '3 bemolli: Bb, Eb, Ab' },
+            'Ab': { notes: ['Ab', 'Bb', 'C', 'Db', 'Eb', 'F', 'G'], accidentals: '4 bemolli: Bb, Eb, Ab, Db' }
+        };
+
+        const pianoKeys = [
+            { note: 'C', type: 'white', position: 0 },
+            { note: 'C#', type: 'black', position: 26 },
+            { note: 'D', type: 'white', position: 42 },
+            { note: 'D#', type: 'black', position: 68 },
+            { note: 'E', type: 'white', position: 84 },
+            { note: 'F', type: 'white', position: 126 },
+            { note: 'F#', type: 'black', position: 152 },
+            { note: 'G', type: 'white', position: 168 },
+            { note: 'G#', type: 'black', position: 194 },
+            { note: 'A', type: 'white', position: 210 },
+            { note: 'A#', type: 'black', position: 236 },
+            { note: 'B', type: 'white', position: 252 }
+        ];
+
+        let currentScale = '';
+        let score = 0;
+        let questionCount = 0;
+        let answered = false;
+
+        function createPiano() {
+            const piano = document.getElementById('piano');
+            piano.innerHTML = '';
+            
+            // Prima crea tutti i tasti bianchi
+            pianoKeys.filter(key => key.type === 'white').forEach((key, index) => {
+                const whiteKey = document.createElement('div');
+                whiteKey.className = 'key white-key';
+                whiteKey.dataset.note = key.note;
+                whiteKey.style.left = key.position + 'px';
+                
+                const label = document.createElement('span');
+                label.className = 'key-label';
+                label.textContent = key.note;
+                whiteKey.appendChild(label);
+                
+                piano.appendChild(whiteKey);
+            });
+            
+            // Poi crea i tasti neri sopra
+            pianoKeys.filter(key => key.type === 'black').forEach(key => {
+                const blackKey = document.createElement('div');
+                blackKey.className = 'key black-key';
+                blackKey.dataset.note = key.note;
+                blackKey.style.left = key.position + 'px';
+                piano.appendChild(blackKey);
+            });
+        }
+
+        function highlightScale(scaleName) {
+            const scale = scales[scaleName];
+            const keys = document.querySelectorAll('.key');
+            
+            keys.forEach(key => {
+                key.classList.remove('active');
+                const keyNote = key.dataset.note;
+                
+                // Controlla se la nota è nella scala
+                scale.notes.forEach(note => {
+                    // Gestisce le equivalenze enarmoniche (es. A# = Bb)
+                    if (keyNote === note) {
+                        key.classList.add('active');
+                    } else if (note.includes('b')) {
+                        // Converte bemolle in diesis equivalente
+                        const noteBase = note.charAt(0);
+                        const prevNote = String.fromCharCode(noteBase.charCodeAt(0) - 1);
+                        const sharpEquivalent = prevNote === '@' ? 'G#' : 
+                                               prevNote === 'E' ? 'D#' : 
+                                               prevNote === 'B' ? 'A#' : 
+                                               prevNote + '#';
+                        if (keyNote === sharpEquivalent) {
+                            key.classList.add('active');
+                        }
+                    }
+                });
+            });
+        }
+
+        function generateOptions(correctScale) {
+            const allScales = Object.keys(scales);
+            const options = [correctScale];
+            
+            while (options.length < 4) {
+                const randomScale = allScales[Math.floor(Math.random() * allScales.length)];
+                if (!options.includes(randomScale)) {
+                    options.push(randomScale);
+                }
+            }
+            
+            return options.sort(() => Math.random() - 0.5);
+        }
+
+        function displayOptions(options) {
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = `${option} maggiore`;
+                btn.onclick = () => checkAnswer(option);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected) {
+            if (answered) return;
+            answered = true;
+            
+            const buttons = document.querySelectorAll('.option-btn');
+            const feedback = document.getElementById('feedback');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            buttons.forEach(btn => {
+                if (btn.textContent.includes(selected)) {
+                    if (selected === currentScale) {
+                        btn.classList.add('correct');
+                        score++;
+                        document.getElementById('score').textContent = score;
+                        feedback.textContent = `✅ Corretto! ${scales[currentScale].accidentals}`;
+                        feedback.className = 'feedback correct show';
+                    } else {
+                        btn.classList.add('incorrect');
+                    }
+                } else if (btn.textContent.includes(currentScale)) {
+                    btn.classList.add('correct');
+                }
+            });
+            
+            if (selected !== currentScale) {
+                feedback.textContent = `❌ Sbagliato! Era ${currentScale} maggiore. ${scales[currentScale].accidentals}`;
+                feedback.className = 'feedback incorrect show';
+            }
+            
+            nextBtn.classList.add('show');
+        }
+
+        function nextQuestion() {
+            if (questionCount >= 10) {
+                showResult();
+                return;
+            }
+            
+            answered = false;
+            questionCount++;
+            document.getElementById('questionNum').textContent = questionCount;
+            document.getElementById('feedback').classList.remove('show');
+            document.getElementById('nextBtn').classList.remove('show');
+            
+            const scaleKeys = Object.keys(scales);
+            currentScale = scaleKeys[Math.floor(Math.random() * scaleKeys.length)];
+            
+            highlightScale(currentScale);
+            const options = generateOptions(currentScale);
+            displayOptions(options);
+        }
+
+        function showResult() {
+            document.getElementById('gameContainer').style.display = 'none';
+            document.getElementById('resultContainer').classList.add('show');
+            document.getElementById('finalScore').textContent = `${score}/10`;
+        }
+
+        function restartQuiz() {
+            score = 0;
+            questionCount = 0;
+            answered = false;
+            
+            document.getElementById('score').textContent = '0';
+            document.getElementById('questionNum').textContent = '1';
+            document.getElementById('gameContainer').style.display = 'block';
+            document.getElementById('resultContainer').classList.remove('show');
+            
+            nextQuestion();
+        }
+
+        // Inizializza il gioco
+        createPiano();
+        nextQuestion();
+
+        // Service Worker per PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript,' + encodeURIComponent(`
+                self.addEventListener('install', e => {
+                    e.waitUntil(
+                        caches.open('v1').then(cache => {
+                            return cache.addAll(['/']);
+                        })
+                    );
+                });
+                
+                self.addEventListener('fetch', e => {
+                    e.respondWith(
+                        caches.match(e.request).then(response => {
+                            return response || fetch(e.request);
+                        })
+                    );
+                });
+            `));
+        }
+    </script>
+</body>
+</html>
